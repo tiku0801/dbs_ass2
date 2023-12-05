@@ -52,6 +52,7 @@ public class SystemServiceImpl implements SystemService {
         Room findRoom = roomRepo.findRoomByName(roomName);
         if (findRoom != null){
             if (findRoom.getCurrStudent() < 6){
+                studentRepo.save(student);
                 newStd.setStudent(student);
                 newStd.setRoom(findRoom);
                 newStd.setStartDate(LocalDate.now());
@@ -63,6 +64,8 @@ public class SystemServiceImpl implements SystemService {
             return newResponse;
         }
         Room newRoom = new Room(roomName);
+        roomRepo.save(newRoom);
+        studentRepo.save(student);
         newStd.setRoom(newRoom);
         newStd.setStudent(student);
         newStd.setStartDate(LocalDate.now());
