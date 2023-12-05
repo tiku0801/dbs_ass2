@@ -96,7 +96,7 @@ public class SystemServiceImpl implements SystemService {
         if (findRoom != null){
             if (findRoom.getId().equals(stdCheck.getRoom().getId())) {
                 updateStudentInfo(student);
-                newResponse.setStudent(stdCheck);
+                newResponse.setStudent(studentInRoomRepo.findStdById(student.getId()));
                 return newResponse;
             }
             else {
@@ -115,7 +115,7 @@ public class SystemServiceImpl implements SystemService {
                     // studentInRoomRepo.deleteStudent(LocalDate.now(), student.getId(), stdCheck.getRoom().getId());
                     studentInRoomRepo.save(newStd);
                     roomRepo.updateCurrAdd(newRoomName);
-                    newResponse.setStudent(stdCheck);
+                    newResponse.setStudent(studentInRoomRepo.findStdById(student.getId()));
                     return newResponse;
                 }
                 
