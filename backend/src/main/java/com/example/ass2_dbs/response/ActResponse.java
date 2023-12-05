@@ -2,9 +2,9 @@ package com.example.ass2_dbs.response;
 
 public class ActResponse {
     private boolean isSocialDay;   
-    private boolean isMaxStudent;
+    private boolean isDuplicated;
     public ActResponse() {
-        this.isMaxStudent = true;
+        this.isDuplicated = true;
         this.isSocialDay = true;
     }
     public boolean isSocialDay() {
@@ -13,11 +13,11 @@ public class ActResponse {
     public void setSocialDay(boolean isSocialDay) {
         this.isSocialDay = isSocialDay;
     }
-    public boolean isMaxStudent() {
-        return isMaxStudent;
+    public boolean isDuplicated() {
+        return isDuplicated;
     }
-    public void setMaxStudent(boolean isMaxStudent) {
-        this.isMaxStudent = isMaxStudent;
+    public void setDuplicated(boolean isMaxStudent) {
+        this.isDuplicated = isMaxStudent;
     }
 
     

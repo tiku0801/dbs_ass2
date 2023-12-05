@@ -156,6 +156,10 @@ public class SystemServiceImpl implements SystemService {
         ActResponse newRes = new ActResponse();
         StudentInAct newStd = new StudentInAct(); 
         if (studentInActRepo.checkDay(stdId)){
+            if (studentInActRepo.findActById(actId).getStudent().getId().equals(stdId)){
+                newRes.setDuplicated(false);
+                return newRes;
+            }
             Activity findActivity = actitvityRepo.findActById(actId);
             Student findStudent = studentRepo.findStdById(stdId);
             studentRepo.updateSocialDay(findActivity.getNumOfDay() + findStudent.getSocialDay(), stdId);
