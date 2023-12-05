@@ -53,17 +53,17 @@ public class SystemController {
     }
 
     @PostMapping("/act")
-    public void addAct(@RequestBody Activity activity){
-        systemService.addAct(activity);
+    public Activity addAct(@RequestBody Activity activity){
+        return systemService.addAct(activity);
     }
 
     @DeleteMapping("/act")
-    public void deleteAct(@RequestBody Integer actId){
+    public void deleteAct(@RequestParam Integer actId){
         systemService.deleteAct(actId);
     }
 
     @PatchMapping("/act")
-    public ActResponse assignAct(@RequestBody Integer stdId, @RequestBody Integer actId){
+    public ActResponse assignAct(@RequestParam Integer stdId, @RequestParam Integer actId){
         return systemService.assignAct(stdId, actId);
     }
 

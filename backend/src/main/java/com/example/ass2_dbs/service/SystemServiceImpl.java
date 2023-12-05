@@ -75,8 +75,13 @@ public class SystemServiceImpl implements SystemService {
 
     @Override
     public void deleteStudent(Integer stdID, String roomName) {
-        roomRepo.deleteStudent(roomRepo.findRoomByName(roomName).getCurrStudent() -1, roomName);
-        studentInRoomRepo.deleteStudent(LocalDate.now(),stdID, roomName);
+        Room findRoom = roomRepo.findRoomByName(roomName);
+        roomRepo.deleteStudent(findRoom.getCurrStudent() -1, findRoom.getId());
+        studentInRoomRepo.deleteStudent(LocalDate.now(), stdID, findRoom.getId());
+    }
+
+    private void updateStudentInfo(Student student){
+        studentRepo.udpateInfo(student.getFirstName(),student.getLastName(),student.getSex() ,student.getSocialDay(),student.getId());
     }
 
     @Override
@@ -86,30 +91,39 @@ public class SystemServiceImpl implements SystemService {
         //     newResponse.setMsvv(false);
         //     return newResponse;
         // } 
-        studentRepo.udpateInfo( student.getFirstName(),
-                                student.getLastName(),
-                                student.getSex(), 
-                                student.getSocialDay(),
-                                student.getId());
-        
-        if (roomRepo.findRoomByName(newRoomName)!=null){
-            if (roomRepo.findRoomByName(newRoomName).getId().equals(studentInRoomRepo.findStdById(student.getId()).getRoom().getId())) {
+        Room findRoom = roomRepo.findRoomByName(newRoomName);
+        StudentInRoom stdCheck = studentInRoomRepo.findStdById(student.getId());
+        if (findRoom != null){
+            if (findRoom.getId().equals(stdCheck.getRoom().getId())) {
+                updateStudentInfo(student);
+                newResponse.setStudent(stdCheck);
                 return newResponse;
             }
             else {
-                if (roomRepo.findRoomByName(newRoomName).getCurrStudent() == 6){
+                if (findRoom.getCurrStudent() == 6){
                     newResponse.setMaxStudent(false);
                     return newResponse;
                 }
-                StudentInRoom newStd = new StudentInRoom();
-                newStd.setStartDate(LocalDate.now());
-                newStd.setRoom(roomRepo.findRoomByName(newRoomName));
-                newStd.setStudent(student);
-                studentInRoomRepo.deleteStudent(LocalDate.now(), student.getId(), newRoomName);
-                studentInRoomRepo.save(newStd);
+                else {
+                    updateStudentInfo(student);
+                    StudentInRoom newStd = new StudentInRoom();
+                    newStd.setStartDate(LocalDate.now());
+                    newStd.setRoom(findRoom);
+                    newStd.setStudent(student);
+                    //delete student from old room
+                    deleteStudent(student.getId(),stdCheck.getRoom().getRoomName());
+                    // studentInRoomRepo.deleteStudent(LocalDate.now(), student.getId(), stdCheck.getRoom().getId());
+                    studentInRoomRepo.save(newStd);
+                    roomRepo.updateCurrAdd(newRoomName);
+                    newResponse.setStudent(stdCheck);
+                    return newResponse;
+                }
+                
             }
         }
-        studentInRoomRepo.deleteStudent(LocalDate.now(), student.getId(), newRoomName);
+        updateStudentInfo(student);
+        //studentInRoomRepo.deleteStudent(LocalDate.now(), student.getId(), stdCheck.getRoom().getId());
+        deleteStudent(student.getId(),stdCheck.getRoom().getRoomName());
         return addStudent(student, newRoomName);
     }
 
@@ -140,10 +154,13 @@ public class SystemServiceImpl implements SystemService {
         ActResponse newRes = new ActResponse();
         StudentInAct newStd = new StudentInAct(); 
         if (studentInActRepo.checkDay(stdId)){
-            studentRepo.updatSocialDay(actitvityRepo.findActById(actId).getNumOfDay() + studentRepo.findStdById(stdId).getSocialDay(), stdId);
+            Activity findActivity = actitvityRepo.findActById(actId);
+            Student findStudent = studentRepo.findStdById(stdId);
+            studentRepo.updateSocialDay(findActivity.getNumOfDay() + findStudent.getSocialDay(), stdId);
             newStd.setStudent(studentRepo.findStdById(stdId));
             newStd.setActivity(actitvityRepo.findActById(actId));
             studentInActRepo.save(newStd);
+            return newRes;
         } 
         newRes.setSocialDay(false);
         return newRes;

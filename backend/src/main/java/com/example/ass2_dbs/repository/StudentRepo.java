@@ -24,7 +24,7 @@ public interface StudentRepo extends JpaRepository<Student,Integer>{
     public void updateLName(String lastName, Integer id);
 
     @Query("update Student s set s.socialDay = ?1 where s.id = ?2")
-    public void updatSocialDay(Integer socialDay, Integer id);
+    public void updateSocialDay(Integer socialDay, Integer id);
 
     // @Query("update Student s set s.sex = ? 1 where s.id = ?2")
     // public void updateSex(Character sex, Integer id);
