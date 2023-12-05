@@ -75,7 +75,8 @@ public class SystemServiceImpl implements SystemService {
 
     @Override
     public void deleteStudent(Integer stdID, String roomName) {
-        studentInRoomRepo.deleteStudent(roomRepo.findRoomByName(roomName).getCurrStudent() -1, LocalDate.now(),stdID, roomName);
+        roomRepo.deleteStudent(roomRepo.findRoomByName(roomName).getCurrStudent() -1, roomName);
+        studentInRoomRepo.deleteStudent(LocalDate.now(),stdID, roomName);
     }
 
     @Override

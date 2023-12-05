@@ -19,4 +19,9 @@ public interface RoomRepo  extends JpaRepository<Room,Integer>{
     @Modifying
     @Query("update Room r set r.currStudent = r.currStudent + 1 where r.roomName = ?1")
     public void updateCurrAdd(String roomName);
+
+    @Modifying
+    @Transactional
+    @Query("update Room r set r.currStudent = ?1 where r.roomName = ?2")
+    public void deleteStudent(int currStudent, String roomName);
 }

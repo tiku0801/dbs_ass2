@@ -38,7 +38,7 @@ public class SystemController {
     }
 
     @DeleteMapping("/list")
-    public void deleteStudent(@RequestBody Integer stdId, @RequestParam String roomName){
+    public void deleteStudent(@RequestParam Integer stdId, @RequestParam String roomName){
         systemService.deleteStudent(stdId, roomName);
     }
 
