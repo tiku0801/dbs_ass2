@@ -1,10 +1,13 @@
 package com.example.ass2_dbs.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.example.ass2_dbs.entity.Student;
+
+import jakarta.transaction.Transactional;
 
 @Repository
 public interface StudentRepo extends JpaRepository<Student,Integer>{
@@ -26,6 +29,8 @@ public interface StudentRepo extends JpaRepository<Student,Integer>{
     // @Query("update Student s set s.sex = ? 1 where s.id = ?2")
     // public void updateSex(Character sex, Integer id);
 
-    @Query("update Student s set s.firstName = ?1, s.lastName = ?2, s.socialDay = ?3, s.sex = ?4 where s.id = ?5")
+    @Modifying
+    @Transactional
+    @Query("update Student s set s.firstName = ?1, s.lastName = ?2, s.sex = ?3, s.socialDay = ?4 where s.id = ?5")
     public void  udpateInfo(String firstName, String lastName,Character sex, Integer socialDay,Integer id);
 }

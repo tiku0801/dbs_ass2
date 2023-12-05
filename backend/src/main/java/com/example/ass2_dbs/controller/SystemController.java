@@ -43,8 +43,8 @@ public class SystemController {
     }
 
     @PutMapping("/list")
-    public RoomResponse updateStudent(@RequestBody Student student, @RequestParam String roomNamee){
-        return systemService.updateStudent(student, roomNamee);
+    public RoomResponse updateStudent(@RequestBody Student student, @RequestParam String roomName){
+        return systemService.updateStudent(student, roomName);
     }
 
     @GetMapping("/act")

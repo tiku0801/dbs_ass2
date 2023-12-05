@@ -65,7 +65,7 @@ public class SystemServiceImpl implements SystemService {
         }
         Room newRoom = new Room(roomName);
         roomRepo.save(newRoom);
-        studentRepo.save(student);
+        if (studentRepo.findStdById(student.getId()) == null) studentRepo.save(student);
         newStd.setRoom(newRoom);
         newStd.setStudent(student);
         newStd.setStartDate(LocalDate.now());
@@ -91,21 +91,26 @@ public class SystemServiceImpl implements SystemService {
                                 student.getSex(), 
                                 student.getSocialDay(),
                                 student.getId());
-        if (newRoomName == null) {
-            return newResponse;
-        }
-        else {
-            if (roomRepo.findRoomByName(newRoomName).getCurrStudent() == 6){
-                newResponse.setMaxStudent(false);
+        
+        if (roomRepo.findRoomByName(newRoomName)!=null){
+            if (roomRepo.findRoomByName(newRoomName).getId().equals(studentInRoomRepo.findStdById(student.getId()).getRoom().getId())) {
                 return newResponse;
             }
-            StudentInRoom newStd = new StudentInRoom();
-            newStd.setStartDate(LocalDate.now());
-            newStd.setRoom(roomRepo.findRoomByName(newRoomName));
-            newStd.setStudent(student);
-            studentInRoomRepo.save(newStd);
+            else {
+                if (roomRepo.findRoomByName(newRoomName).getCurrStudent() == 6){
+                    newResponse.setMaxStudent(false);
+                    return newResponse;
+                }
+                StudentInRoom newStd = new StudentInRoom();
+                newStd.setStartDate(LocalDate.now());
+                newStd.setRoom(roomRepo.findRoomByName(newRoomName));
+                newStd.setStudent(student);
+                studentInRoomRepo.deleteStudent(LocalDate.now(), student.getId(), newRoomName);
+                studentInRoomRepo.save(newStd);
+            }
         }
-        return newResponse;
+        studentInRoomRepo.deleteStudent(LocalDate.now(), student.getId(), newRoomName);
+        return addStudent(student, newRoomName);
     }
 
     @Override
