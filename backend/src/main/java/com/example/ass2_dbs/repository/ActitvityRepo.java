@@ -8,6 +8,6 @@ import com.example.ass2_dbs.entity.Activity;
 
 @Repository
 public interface ActitvityRepo extends JpaRepository<Activity,Integer>{
-    @Query("select a from Activity a where a.id = id")
+    @Query("select a from Activity a where a.id = ?1")
     public Activity findActById(Integer id);
 }

@@ -23,6 +23,8 @@ public interface StudentRepo extends JpaRepository<Student,Integer>{
     @Query("update Student s set s.lastName = ?1 where s.id = ?2")
     public void updateLName(String lastName, Integer id);
 
+    @Modifying
+    @Transactional
     @Query("update Student s set s.socialDay = ?1 where s.id = ?2")
     public void updateSocialDay(Integer socialDay, Integer id);
 

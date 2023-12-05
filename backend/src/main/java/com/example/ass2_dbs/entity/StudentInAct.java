@@ -14,11 +14,11 @@ public class StudentInAct {
     @Temporal(TemporalType.DATE)
     private LocalDate date;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "student_id",referencedColumnName = "id")
     private Student student;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "act_id",referencedColumnName = "id")
     private Activity activity;
 
