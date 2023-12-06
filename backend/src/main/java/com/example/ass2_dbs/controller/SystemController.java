@@ -48,8 +48,13 @@ public class SystemController {
     }
 
     @GetMapping("/act")
-    public List<StudentInAct> listOfActs(){
+    public List<Activity> listOfActs(){
         return systemService.listOfAct();
+    }
+
+    @GetMapping("/act/info")
+    public List<StudentInAct> stdListOfAct(@RequestParam Integer actId){
+        return systemService.listOfStdAssignToAct(actId);
     }
 
     @PostMapping("/act")

@@ -131,8 +131,8 @@ public class SystemServiceImpl implements SystemService {
     }
 
     @Override
-    public List<StudentInAct> listOfAct() {
-        return studentInActRepo.findAll();
+    public List<Activity> listOfAct() {
+        return actitvityRepo.findAll();
     }
 
     @Override
@@ -175,6 +175,11 @@ public class SystemServiceImpl implements SystemService {
         newRes.setSocialDay(false);
         return newRes;
         
+    }
+
+    @Override
+    public List<StudentInAct> listOfStdAssignToAct(Integer actId) {
+        return studentInActRepo.stdList(actId);
     }
 
     // @Override

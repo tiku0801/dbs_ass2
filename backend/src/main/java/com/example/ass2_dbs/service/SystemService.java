@@ -18,9 +18,11 @@ public interface SystemService {
 
     public RoomResponse updateStudent(Student student, String roomName);
 
-    public List<StudentInAct> listOfAct();
+    public List<Activity> listOfAct();
 
     public Activity addAct(Activity activity);
+
+    public List<StudentInAct> listOfStdAssignToAct(Integer actId);
 
     public void deleteAct(Integer actId);
 
