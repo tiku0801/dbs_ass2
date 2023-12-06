@@ -1,32 +1,22 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   IconButton,
-  Modal,
-  Paper,
   TextField,
   Typography,
-  styled,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 
 import EditIcon from "@mui/icons-material/Edit";
 import { green, red } from "@mui/material/colors";
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: "center",
-  color: theme.palette.text.secondary,
-}));
+import axios from "axios";
 
 const styleItem = {
   textAlign: "center",
@@ -34,38 +24,98 @@ const styleItem = {
   fontWeight: 500,
 };
 
-const styleModal = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
-
 export const StInfoRow = ({
   id,
-  last_name,
-  first_name,
+  studentId,
+  setInitData,
+  initData,
+  index,
+  lastName,
+  firstName,
   sex,
-  room_number,
-  building_name,
-  student_id,
-  ctxh,
+  roomName,
+  mssv,
+  socialDay,
 }) => {
+  const [roomNumber, buildingName] = roomName.split("-");
   const [open, setOpen] = useState(false);
 
+  const defaultFormValues = {
+    lastName: lastName,
+    firstName: firstName,
+    sex: sex,
+    roomNumber: roomNumber,
+    buildingName: buildingName,
+    mssv: mssv,
+    socialDay: socialDay,
+  };
+  const form = useForm({
+    defaultValues: defaultFormValues,
+  });
+
+  const { register, handleSubmit, formState, reset } = form;
+
+  const { errors } = formState;
+  const onSubmit = (data) => {
+    delete data.mssv;
+    axios
+      .put(
+        `http://localhost:8080/list?roomName=${data.roomNumber}-${data.buildingName}`,
+        { ...data, id: studentId }
+      )
+      .then((response) => {
+        let arr = initData;
+        for (let i = 0; i < initData.length; i++) {
+          if (arr[i].student.id === id) {
+            arr[i] = {
+              ...arr[i],
+              student: {
+                ...arr[i].student,
+                ...data,
+              },
+              room: {
+                ...arr[i].room,
+                roomName: `${data.roomNumber}-${data.buildingName}`,
+              },
+            };
+          }
+        }
+
+        console.log([...arr]);
+        setInitData([...arr]);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    handleClose();
+  };
+
   const handleOpen = () => {
-    console.log(1);
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
-    console.log(open);
+  };
+
+  const handleDelete = async () => {
+    await axios
+      .delete(
+        `http://localhost:8080/list?stdId=${studentId}&roomName=${roomName}`
+      )
+      .then((response) => {
+        console.log(`Student with ID ${studentId} deleted successfully`);
+      })
+      .catch((error) => {
+        console.error(`Error deleting student with ID ${studentId}:`, error);
+      });
+    console.log(initData.filter((item) => item.student.id !== studentId));
+    setInitData(initData.filter((item) => item.student.id !== studentId));
+  };
+
+  const handleCancel = () => {
+    reset(defaultFormValues);
+    handleClose();
   };
   return (
     <Grid
@@ -83,127 +133,109 @@ export const StInfoRow = ({
       }}
     >
       <Grid sx={styleItem} lg={1}>
-        {id}
+        {index}
       </Grid>
       <Grid sx={styleItem} lg={1}>
-        {student_id}
+        {mssv}
       </Grid>
       <Grid sx={styleItem} lg={2}>
-        {last_name}
+        {lastName}
       </Grid>
       <Grid sx={styleItem} lg={1}>
-        {first_name}
+        {firstName}
       </Grid>
       <Grid sx={styleItem} lg={1}>
         {sex}
       </Grid>
       <Grid sx={styleItem} lg={1}>
-        {room_number}
+        {roomNumber}
       </Grid>
       <Grid sx={styleItem} lg={1}>
-        {building_name}
+        {buildingName}
       </Grid>
       <Grid sx={styleItem} lg={1}>
-        {ctxh}
+        {socialDay}
       </Grid>
 
       <Grid sx={{ display: "flex", justifyContent: "space-evenly" }} lg={1}>
         <IconButton aria-label="edit">
           <EditIcon sx={{ color: green[500] }} onClick={handleOpen} />
-          {/* <Modal
-            open={modal.open}
+          <Dialog
+            open={open}
+            noValidate
             onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
           >
-            <Box sx={styleModal}>
-              <Grid container spacing={2}>
-                {[
-                  { label: "Họ và tên đệm", gridSize: "6" },
-                  { label: "Tên", gridSize: "3" },
-                  { label: "MSSV", gridSize: "3" },
-                  { label: "Giới tính", gridSize: "3" },
-                  { label: "Tòa", gridSize: "3" },
-                  { label: "Phòng", gridSize: "3" },
-                  { label: "Số ngày CTXH", gridSize: "3" },
-                ].map((item) => (
-                  <Grid xs={item.gridSize}>
-                    <TextField
-                      id="outlined-basic"
-                      label={item.label}
-                      variant="outlined"
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-              <Button onClick={handleClose}>Close Child Modal</Button>
-            </Box>
-          </Modal> */}
-          <Dialog open={open} onClose={handleClose}>
             <DialogTitle>
               <Typography variant="h4">
                 Chỉnh sửa thông tin sinh viên
               </Typography>
             </DialogTitle>
             <DialogContent>
-              {/* <DialogContentText>
-                  To subscribe to this website, please enter your email address
-                  here. We will send updates occasionally.
-                </DialogContentText> */}
               <Grid container spacing={2}>
                 {[
                   {
                     label: "Họ và tên đệm",
                     gridSize: 7,
-                    type: "last_name",
-                    defaultValue: `${last_name}`,
+                    name: "lastName",
+                    defaultValue: `${lastName}`,
                   },
                   {
                     label: "Tên",
                     gridSize: 5,
-                    type: "first_name",
-                    defaultValue: `${first_name}`,
+                    name: "firstName",
+                    defaultValue: `${firstName}`,
                   },
                   {
                     label: "MSSV",
                     gridSize: 6,
-                    type: "student_id",
-                    defaultValue: `${student_id}`,
+                    name: "mssv",
+                    defaultValue: `${mssv}`,
                   },
                   {
                     label: "Giới tính",
                     gridSize: 6,
-                    type: "sex",
+                    name: "sex",
                     defaultValue: `${sex}`,
                   },
                   {
                     label: "Tòa",
                     gridSize: 4,
-                    type: "building_name",
-                    defaultValue: `${building_name}`,
+                    name: "buildingName",
+                    defaultValue: `${buildingName}`,
                   },
                   {
                     label: "Phòng",
                     gridSize: 4,
-                    type: "room_number",
-                    defaultValue: `${room_number}`,
+                    name: "roomNumber",
+                    defaultValue: `${roomNumber}`,
                   },
                   {
                     label: "Số ngày CTXH",
                     gridSize: 4,
-                    type: "ctxh",
-                    defaultValue: `${ctxh}`,
+                    name: "socialDay",
+                    defaultValue: `${socialDay}`,
                   },
                 ].map((item) => (
                   <Grid xs={item.gridSize}>
                     <TextField
                       required
+                      disabled={!!(item.name === "mssv")}
                       autoFocus
-                      defaultValue={item.defaultValue}
+                      {...register(`${item.name}`, {
+                        required: `${item.label} is required`,
+                      })}
+                      error={!!errors[item.name]}
+                      helperText={
+                        errors && errors[item.name]
+                          ? errors[item.name].message
+                          : ""
+                      }
                       margin="dense"
                       id="name"
                       label={item.label}
-                      type={item.type}
+                      name={item.name}
                       fullWidth
                       variant="outlined"
                     />
@@ -212,12 +244,12 @@ export const StInfoRow = ({
               </Grid>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose}>Hủy</Button>
-              <Button onClick={handleClose}>Áp dụng</Button>
+              <Button onClick={handleCancel}>Hủy</Button>
+              <Button type="submit">Áp dụng</Button>
             </DialogActions>
           </Dialog>
         </IconButton>
-        <IconButton aria-label="delete">
+        <IconButton aria-label="delete" onClick={handleDelete}>
           <DeleteIcon sx={{ color: red[900] }} />
         </IconButton>
       </Grid>

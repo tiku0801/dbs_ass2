@@ -1,206 +1,311 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
-  Box,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
+  Divider,
   IconButton,
-  Modal,
-  Paper,
   TextField,
-  Typography,
-  styled,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 
 import EditIcon from "@mui/icons-material/Edit";
-import { green, red } from "@mui/material/colors";
-import React, { useState } from "react";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import AddCircleIcon from "@mui/icons-material/AddCircleOutlined";
+import { blue, green, red } from "@mui/material/colors";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useForm } from "react-hook-form";
 
 const styleItem = {
   textAlign: "center",
   fontSize: 20,
   fontWeight: 500,
 };
+const colHeader = {
+  textAlign: "center",
+  fontWeight: 700,
+  fontSize: 25,
+  color: "#023556",
+};
 
 export const SocialActivityRow = ({
+  index,
   id,
-  last_name,
-  first_name,
-  sex,
-  room_number,
-  building_name,
-  student_id,
-  ctxh,
+  actName,
+  numOfDay,
+  startDate,
+  initData,
+  setInitData,
 }) => {
-  const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = React.useState(false);
+  const [ACT_INFO_DATA, setACT_INFO_DATA] = useState([]);
 
-  const handleOpen = () => {
+  const fetchActInfoData = () => {
+    axios
+      .get(`http://localhost:8080/act/info?actId=${id}`)
+      .then((response) => {
+        console.log(response.data);
+        setACT_INFO_DATA(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  useEffect(() => {
+    fetchActInfoData();
+  }, [expanded]);
+
+  const [openAdd, setOpenAdd] = useState(false);
+  const handleChange = (panel) => (e, isExpanded) => {
+    setExpanded(isExpanded ? panel : false);
+  };
+
+  const form = useForm({
+    defaultValues: {
+      stdId: "",
+      actName: actName,
+    },
+  });
+
+  const onSubmitAdd = (data) => {
+    axios
+      .patch(`http://localhost:8080/act?stdId=${data.stdId}&actId=${id}`)
+      .then((response) => {
+        console.log(response.data);
+        // setACT_INFO_DATA(ACT_INFO_DATA.push({}));
+        fetchActInfoData();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    handleCloseAdd();
+    console.log(data);
+  };
+
+  const asyncValidate = async (value, name) => {
+    // You should replace the URL and the backend validation logic
+    const isDuplicate = ACT_INFO_DATA.some((item) => item.student.id == value);
+
+    if (isDuplicate) {
+      return `Sinh vien already exists`;
+    }
+    return true; // Value is unique
+  };
+  const { register, handleSubmit, formState, reset } = form;
+
+  const { errors } = formState;
+
+  const handleOpenAdd = (e) => {
     console.log(1);
-    setOpen(true);
+    setOpenAdd(true);
+    e.stopPropagation();
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    console.log(open);
+  const handleCloseAdd = () => {
+    reset({
+      stdId: "",
+      actName: actName,
+    });
+    setOpenAdd(false);
   };
+
+  const handleCancelAdd = (e) => {
+    e.stopPropagation();
+    reset({
+      stdId: "",
+      actName: actName,
+    });
+
+    handleCloseAdd();
+  };
+
+  const handleDelete = (e) => {
+    axios
+      .delete(`http://localhost:8080/act?actId=${id}`)
+      .then((response) => {
+        console.log(initData);
+        setInitData(initData.filter((item) => item.id !== id));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    e.stopPropagation();
+  };
+
   return (
-    <Grid
-      container
-      columns={10}
-      sx={{
-        backgroundColor: "#E9F3F9",
-        opacity: 0.82,
-        borderRadius: 2,
-        display: "flex",
-        alignItems: "center",
-        color: "#023556",
-        height: 60,
-        marginTop: 1,
-      }}
-    >
-      <Grid sx={styleItem} lg={1}>
-        {id}
-      </Grid>
-      <Grid sx={styleItem} lg={1}>
-        {student_id}
-      </Grid>
-      <Grid sx={styleItem} lg={2}>
-        {last_name}
-      </Grid>
-      <Grid sx={styleItem} lg={1}>
-        {first_name}
-      </Grid>
-      <Grid sx={styleItem} lg={1}>
-        {sex}
-      </Grid>
-      <Grid sx={styleItem} lg={1}>
-        {room_number}
-      </Grid>
-      <Grid sx={styleItem} lg={1}>
-        {building_name}
-      </Grid>
-      <Grid sx={styleItem} lg={1}>
-        {ctxh}
-      </Grid>
+    <Accordion expanded={expanded === id} onChange={handleChange(id)}>
+      <AccordionSummary
+        // expandIcon={<ExpandMoreIcon />}
+        aria-controls="cold-content"
+        id="cold-header"
+        sx={{ backgroundColor: "#E9F3F9" }}
+      >
+        <Grid
+          container
+          columns={9}
+          sx={{
+            width: "100%",
 
-      <Grid sx={{ display: "flex", justifyContent: "space-evenly" }} lg={1}>
-        <IconButton aria-label="edit">
-          <EditIcon sx={{ color: green[500] }} onClick={handleOpen} />
-          {/* <Modal
-            open={modal.open}
-            onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-          >
-            <Box sx={styleModal}>
-              <Grid container spacing={2}>
-                {[
-                  { label: "Họ và tên đệm", gridSize: "6" },
-                  { label: "Tên", gridSize: "3" },
-                  { label: "MSSV", gridSize: "3" },
-                  { label: "Giới tính", gridSize: "3" },
-                  { label: "Tòa", gridSize: "3" },
-                  { label: "Phòng", gridSize: "3" },
-                  { label: "Số ngày CTXH", gridSize: "3" },
-                ].map((item) => (
-                  <Grid xs={item.gridSize}>
-                    <TextField
-                      id="outlined-basic"
-                      label={item.label}
-                      variant="outlined"
-                    />
-                  </Grid>
-                ))}
+            display: "flex",
+            alignActItems: "center",
+            color: "#023556",
+          }}
+        >
+          <Grid sx={styleItem} xs={1}>
+            {index}
+          </Grid>
+          <Grid sx={styleItem} xs={1}>
+            {id}
+          </Grid>
+          <Grid sx={styleItem} xs={3}>
+            {actName}
+          </Grid>
+          <Grid sx={styleItem} xs={1}>
+            {numOfDay}
+          </Grid>
+          <Grid sx={styleItem} xs={2}>
+            {startDate}
+          </Grid>
+          <Grid xs={1} display="flex" justifyContent="space-evenly">
+            <IconButton aria-label="Add student to act">
+              <AddCircleIcon
+                sx={{ color: green[500] }}
+                onClick={handleOpenAdd}
+              />
+            </IconButton>
+
+            <Dialog
+              open={openAdd}
+              onClose={handleCloseAdd}
+              component="form"
+              onSubmit={handleSubmit(onSubmitAdd)}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <DialogTitle>Thêm sinh viên</DialogTitle>
+              <DialogContent>
+                <Grid container spacing={2}>
+                  {[
+                    {
+                      label: "Tên hoạt động",
+                      gridSize: 12,
+                      name: "actName",
+                    },
+                    {
+                      label: "Id của sinh viên",
+                      gridSize: 12,
+                      name: "stdId",
+                    },
+                  ].map((item) => (
+                    <Grid xs={item.gridSize} mt={0}>
+                      <TextField
+                        required
+                        disabled={!!(item.name === "actName")}
+                        autoFocus
+                        onFocus={(e) => e.stopPropagation()}
+                        {...register(`${item.name}`, {
+                          required: `${item.label} is required`,
+                          validate: async (value) =>
+                            await asyncValidate(value, "stdId"),
+                        })}
+                        error={!!errors[item.name]}
+                        helperText={
+                          errors && errors[item.name]
+                            ? errors[item.name].message
+                            : ""
+                        }
+                        margin="dense"
+                        id="name"
+                        label={item.label}
+                        name={item.name}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCancelAdd}>Hủy</Button>
+                <Button type="submit">Áp dụng</Button>
+              </DialogActions>
+            </Dialog>
+
+            <IconButton aria-label="Delete act">
+              <DeleteIcon sx={{ color: red[900] }} onClick={handleDelete} />
+            </IconButton>
+          </Grid>
+        </Grid>
+      </AccordionSummary>
+      <AccordionDetails>
+        <Grid
+          container
+          columns={9}
+          sx={{
+            width: "100%",
+
+            display: "flex",
+            alignItems: "center",
+            color: "#023556",
+          }}
+        >
+          <Grid sx={colHeader} xs={1}>
+            Họ
+          </Grid>
+          <Grid sx={colHeader} xs={3}>
+            Tên
+          </Grid>
+          <Grid sx={colHeader} xs={1}>
+            MSSV
+          </Grid>
+          <Grid sx={colHeader} xs={2}>
+            Giới tính
+          </Grid>
+          <Grid sx={colHeader} xs={2}>
+            Ngày CTXH
+          </Grid>
+        </Grid>
+        {ACT_INFO_DATA.filter((item) => item.activity.id === id).map(
+          (item, infoIndex) => (
+            <>
+              <Divider />
+              <Grid
+                container
+                columns={9}
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  color: "#023556",
+                  height: 60,
+                }}
+              >
+                <Grid sx={styleItem} xs={1}>
+                  {item.student.lastName}
+                </Grid>
+                <Grid sx={styleItem} xs={3}>
+                  {item.student.firstName}
+                </Grid>
+                <Grid sx={styleItem} xs={1}>
+                  {item.student.mssv}
+                </Grid>
+                <Grid sx={styleItem} xs={2}>
+                  {item.student.sex}
+                </Grid>
+                <Grid sx={styleItem} xs={2}>
+                  {item.student.socialDay}
+                </Grid>
               </Grid>
-              <Button onClick={handleClose}>Close Child Modal</Button>
-            </Box>
-          </Modal> */}
-          <Dialog open={open} onClose={handleClose}>
-            <DialogTitle>
-              <Typography variant="h4">
-                Chỉnh sửa thông tin sinh viên
-              </Typography>
-            </DialogTitle>
-            <DialogContent>
-              {/* <DialogContentText>
-                  To subscribe to this website, please enter your email address
-                  here. We will send updates occasionally.
-                </DialogContentText> */}
-              <Grid container spacing={2}>
-                {[
-                  {
-                    label: "Họ và tên đệm",
-                    gridSize: 7,
-                    type: "last_name",
-                    defaultValue: `${last_name}`,
-                  },
-                  {
-                    label: "Tên",
-                    gridSize: 5,
-                    type: "first_name",
-                    defaultValue: `${first_name}`,
-                  },
-                  {
-                    label: "MSSV",
-                    gridSize: 6,
-                    type: "student_id",
-                    defaultValue: `${student_id}`,
-                  },
-                  {
-                    label: "Giới tính",
-                    gridSize: 6,
-                    type: "sex",
-                    defaultValue: `${sex}`,
-                  },
-                  {
-                    label: "Tòa",
-                    gridSize: 4,
-                    type: "building_name",
-                    defaultValue: `${building_name}`,
-                  },
-                  {
-                    label: "Phòng",
-                    gridSize: 4,
-                    type: "room_number",
-                    defaultValue: `${room_number}`,
-                  },
-                  {
-                    label: "Số ngày CTXH",
-                    gridSize: 4,
-                    type: "ctxh",
-                    defaultValue: `${ctxh}`,
-                  },
-                ].map((item) => (
-                  <Grid xs={item.gridSize}>
-                    <TextField
-                      required
-                      autoFocus
-                      defaultValue={item.defaultValue}
-                      margin="dense"
-                      id="name"
-                      label={item.label}
-                      type={item.type}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose}>Hủy</Button>
-              <Button onClick={handleClose}>Áp dụng</Button>
-            </DialogActions>
-          </Dialog>
-        </IconButton>
-        <IconButton aria-label="delete">
-          <DeleteIcon sx={{ color: red[900] }} />
-        </IconButton>
-      </Grid>
-    </Grid>
+            </>
+          )
+        )}
+      </AccordionDetails>
+    </Accordion>
   );
 };
