@@ -45,10 +45,13 @@ public class SystemServiceImpl implements SystemService {
     public RoomResponse addStudent(Student student, String roomName) {
         RoomResponse newResponse = new RoomResponse();
         StudentInRoom newStd = new StudentInRoom();
-        if (studentRepo.findStdByMs(student.getMssv()) != null){
+        if (studentRepo.findStdByMs(student.getMssv()) !=null){
+            if (studentInRoomRepo.findStdByMs(student.getMssv()) != null){
             newResponse.setMsvv(false);
             return newResponse;
         }
+        }
+        
         Room findRoom = roomRepo.findRoomByName(roomName);
         if (findRoom != null){
             if (findRoom.getCurrStudent() < 6){

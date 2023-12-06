@@ -14,6 +14,9 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface StudentInRoomRepo extends JpaRepository<StudentInRoom, Integer> {
+    @Query("select s from StudentInRoom s where s.student.mssv = ?1 and s.endDate is null")
+    public StudentInRoom findStdByMs(String mssv);
+
     @Query("select s from StudentInRoom s where s.endDate is null")
     public List<StudentInRoom> findAllInfo();
 

@@ -3,7 +3,7 @@ package com.example.ass2_dbs.response;
 import com.example.ass2_dbs.entity.StudentInRoom;
 
 public class RoomResponse {
-    private StudentInRoom student;
+    private StudentInRoom studentInRoom;
     
     private boolean isMsvv;
 
@@ -12,7 +12,7 @@ public class RoomResponse {
     public RoomResponse() {
         this.isMsvv = true;
         this.isMaxStudent = true;
-        this.student = null;
+        this.studentInRoom = null;
     }
 
     public boolean isMsvv() {
@@ -32,11 +32,11 @@ public class RoomResponse {
     }
 
     public StudentInRoom getStudent() {
-        return student;
+        return studentInRoom;
     }
 
     public void setStudent(StudentInRoom student) {
-        this.student = student;
+        this.studentInRoom = student;
     }
 
     
