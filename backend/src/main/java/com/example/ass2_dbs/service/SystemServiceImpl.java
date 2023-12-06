@@ -142,8 +142,8 @@ public class SystemServiceImpl implements SystemService {
 
     @Override
     public void deleteAct(Integer actId) {
-        StudentInAct findAct = studentInActRepo.findActById(actId);
-        if (findAct != null) studentInActRepo.delete(findAct);
+        List<StudentInAct> findAct = studentInActRepo.findActById(actId);
+        if (!findAct.isEmpty()) studentInActRepo.deleteAll(findAct);
         else actitvityRepo.delete(actitvityRepo.findActById(actId));
     }
 
@@ -159,7 +159,7 @@ public class SystemServiceImpl implements SystemService {
         ActResponse newRes = new ActResponse();
         StudentInAct newStd = new StudentInAct(); 
         if (studentInActRepo.checkDay(stdId)){
-            if (studentInActRepo.findActById(actId).getStudent().getId().equals(stdId)){
+            if (studentInActRepo.findStdInAct(actId, stdId) != null){
                 newRes.setDuplicated(false);
                 return newRes;
             }
