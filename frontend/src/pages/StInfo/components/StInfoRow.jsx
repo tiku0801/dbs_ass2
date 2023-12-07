@@ -33,11 +33,11 @@ export const StInfoRow = ({
   lastName,
   firstName,
   sex,
-  roomName,
+  roomNumber,
+  buildingName,
   mssv,
   socialDay,
 }) => {
-  const [roomNumber, buildingName] = roomName.split("-");
   const [open, setOpen] = useState(false);
 
   const defaultFormValues = {
@@ -101,7 +101,7 @@ export const StInfoRow = ({
   const handleDelete = async () => {
     await axios
       .delete(
-        `http://localhost:8080/list?stdId=${studentId}&roomName=${roomName}`
+        `http://localhost:8080/list?stdId=${studentId}&roomName=${roomNumber}-${buildingName}`
       )
       .then((response) => {
         console.log(`Student with ID ${studentId} deleted successfully`);
@@ -109,8 +109,8 @@ export const StInfoRow = ({
       .catch((error) => {
         console.error(`Error deleting student with ID ${studentId}:`, error);
       });
-    console.log(initData.filter((item) => item.student.id !== studentId));
-    setInitData(initData.filter((item) => item.student.id !== studentId));
+    console.log(initData.filter((item) => item.studentId !== studentId));
+    setInitData(initData.filter((item) => item.studentId !== studentId));
   };
 
   const handleCancel = () => {

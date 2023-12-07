@@ -3,12 +3,7 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Pagination,
-  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -20,8 +15,7 @@ import FilterSelect from "../../components/FilterSelect";
 import { SearchBar } from "../../components/SearchBar";
 import usePagination from "../../hooks/usePagination";
 import { StInfoRow } from "./components/StInfoRow";
-
-import { useForm } from "react-hook-form";
+import AddStuDialog from "./components/AddStuDialog";
 
 const colHeader = () => ({
   textAlign: "center",
@@ -31,50 +25,32 @@ const colHeader = () => ({
 });
 
 export default function StInfo() {
-  const defaultFormValues = {
-    lastName: "",
-    firstName: "",
-    sex: "",
-    roomNumber: "",
-    buildingName: "",
-    mssv: "",
-    socialDay: "",
-  };
-  const addDataOnServer = async (data) => {
-    try {
-      const response = await axios.post(
-        `http://localhost:8080/list?roomName=${data.roomNumber}-${data.buildingName}`,
-        { ...data }
-      );
-      fetchActInfoData();
-      handleClose();
-      reset(defaultFormValues);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  const asyncValidate = async (value, name) => {
-    // You should replace the URL and the backend validation logic
-    const isDuplicate = initData.some((item) => item.student.mssv === value);
-
-    if (isDuplicate) {
-      return `${name} already exists`;
-    }
-
-    return true; // Value is unique
-  };
-  const onSubmit = (data) => {
-    addDataOnServer(data);
-  };
-
-  const [initData, setInitData] = useState([]);
   const [open, setOpen] = useState(false);
+  const handleOpen = () => {
+    setOpen(true);
+  };
+  const [initData, setInitData] = useState([]);
 
   const fetchActInfoData = () => {
     axios
       .get("http://localhost:8080/list")
       .then((response) => {
-        setInitData(response.data);
+        setInitData(
+          response.data.map((item) => {
+            const [roomNumber, buildingName] = item.room.roomName.split("-");
+            return {
+              studentId: item.student.id,
+              id: item.id,
+              firstName: item.student.firstName,
+              lastName: item.student.lastName,
+              roomNumber: roomNumber,
+              buildingName: buildingName,
+              mssv: item.student.mssv,
+              sex: item.student.sex,
+              socialDay: item.student.socialDay,
+            };
+          })
+        );
       })
       .catch((error) => {
         console.error(error);
@@ -85,39 +61,8 @@ export default function StInfo() {
     fetchActInfoData();
   }, []);
 
-  useEffect(() => {}, []);
-
   const checkFirstRender = useRef(true);
 
-  const form = useForm({
-    defaultValues: defaultFormValues,
-  });
-
-  const { register, handleSubmit, formState, reset } = form;
-
-  const { errors } = formState;
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const getBuildingName = (roomName) => {
-    const [a, b] = roomName.split("-");
-    return b;
-  };
-  const getRoomNumber = (roomName) => {
-    const [a, b] = roomName.split("-");
-    return a;
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleCancel = () => {
-    reset(defaultFormValues);
-    handleClose();
-  };
   const [search, setSearch] = useState("");
   const [content, setContent] = React.useState({
     sex: "",
@@ -126,12 +71,10 @@ export default function StInfo() {
   const [rowNum, setRowNum] = React.useState(5);
 
   const [filteredData, setFilteredData] = useState(
-    initData.sort((a, b) =>
-      a.student.firstName > b.student.firstName ? 1 : -1
-    )
+    initData.sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
   );
 
-  const [sort, setSort] = useState({ order: "ASC", col: "id" });
+  const [sort, setSort] = useState({ order: "ASC", col: "firstName" });
 
   const { data, page, totalPages, setPage } = usePagination(
     filteredData,
@@ -149,20 +92,16 @@ export default function StInfo() {
           return search.toLowerCase() === "" || search.toLowerCase() === "#"
             ? item
             : search.toLowerCase()[0] === "#"
-            ? getRoomNumber(item.room.roomName).includes(search.slice(1))
-            : item.student.firstName
-                .toLowerCase()
-                .includes(search.toLowerCase()) ||
-              item.student.mssv.toLowerCase().includes(search.toLowerCase()) ||
-              item.student.lastName
-                .toLowerCase()
-                .includes(search.toLowerCase());
+            ? item.roomNumber.includes(search.slice(1))
+            : item.firstName.toLowerCase().includes(search.toLowerCase()) ||
+              item.mssv.toLowerCase().includes(search.toLowerCase()) ||
+              item.lastName.toLowerCase().includes(search.toLowerCase());
         })
         .filter(
           (item) =>
-            (getBuildingName(item.room.roomName) === content.buildingName ||
+            (item.buildingName === content.buildingName ||
               !content.buildingName) &&
-            (item.student.sex === content.sex || !content.sex)
+            (item.sex === content.sex || !content.sex)
         )
     );
 
@@ -191,84 +130,6 @@ export default function StInfo() {
   };
   return (
     <Box className="content" pl={2} pr={2}>
-      <Dialog
-        open={open}
-        noValidate
-        onClose={handleClose}
-        component="form"
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <DialogTitle>
-          <Typography variant="h4">Thêm sinh viên</Typography>
-        </DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2}>
-            {[
-              {
-                label: "Họ và tên đệm",
-                gridSize: 7,
-                name: "lastName",
-              },
-              {
-                label: "Tên",
-                gridSize: 5,
-                name: "firstName",
-              },
-              {
-                label: "MSSV",
-                gridSize: 6,
-                name: "mssv",
-              },
-              {
-                label: "Giới tính",
-                gridSize: 6,
-                name: "sex",
-              },
-              {
-                label: "Tòa",
-                gridSize: 4,
-                name: "buildingName",
-              },
-              {
-                label: "Phòng",
-                gridSize: 4,
-                name: "roomNumber",
-              },
-              {
-                label: "Số ngày CTXH",
-                gridSize: 4,
-                name: "socialDay",
-              },
-            ].map((item) => (
-              <Grid xs={item.gridSize}>
-                <TextField
-                  required
-                  autoFocus
-                  {...register(`${item.name}`, {
-                    required: `${item.label} is required`,
-                    validate: async (value) =>
-                      await asyncValidate(value, "mssv"),
-                  })}
-                  error={!!errors[item.name]}
-                  helperText={
-                    errors && errors[item.name] ? errors[item.name].message : ""
-                  }
-                  margin="dense"
-                  id="name"
-                  label={item.label}
-                  name={item.name}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancel}>Hủy</Button>
-          <Button type="submit">Áp dụng</Button>
-        </DialogActions>
-      </Dialog>
       <Grid
         container
         justifyContent="space-between"
@@ -288,21 +149,15 @@ export default function StInfo() {
                       ...new Set(
                         initData
                           .sort(function (a, b) {
-                            if (
-                              getBuildingName(a.room.roomName) >
-                              getBuildingName(b.room.roomName)
-                            ) {
+                            if (a.buildingName > b.buildingName) {
                               return 1;
                             }
-                            if (
-                              getBuildingName(b.room.roomName) >
-                              getBuildingName(a.room.roomName)
-                            ) {
+                            if (b.buildingName > a.buildingName) {
                               return -1;
                             }
                             return 0;
                           })
-                          .map((item) => getBuildingName(item.room.roomName))
+                          .map((item) => item.buildingName)
                       ),
                     ]
                   : [
@@ -310,21 +165,15 @@ export default function StInfo() {
                         initData
                           .filter((item) => item.venue === content.venue)
                           .sort(function (a, b) {
-                            if (
-                              getBuildingName(a.room.roomName) >
-                              getBuildingName(b.room.roomName)
-                            ) {
+                            if (a.buildingName > b.buildingName) {
                               return 1;
                             }
-                            if (
-                              getBuildingName(b.room.roomName) >
-                              getBuildingName(a.room.roomName)
-                            ) {
+                            if (b.buildingName > a.buildingName) {
                               return -1;
                             }
                             return 0;
                           })
-                          .map((item) => getBuildingName(item.room.roomName))
+                          .map((item) => item.buildingName)
                       ),
                     ]
               }
@@ -338,7 +187,7 @@ export default function StInfo() {
                 content: content.sex,
                 setContent,
               }}
-              items={[...new Set(initData.map((item) => item.student.sex))]}
+              items={[...new Set(initData.map((item) => item.sex))]}
             ></FilterSelect>
           </Grid>
         </Grid>
@@ -351,7 +200,7 @@ export default function StInfo() {
               {
                 gridSize: 1,
                 headerName: "STT",
-                colName: "id",
+                colName: "index",
               },
               {
                 gridSize: 1,
@@ -396,19 +245,23 @@ export default function StInfo() {
                 alignItems={"center"}
                 justifyContent={"center"}
               >
-                <KeyboardArrowRightIcon
-                  sx={{
-                    fontSize: "23px",
-                    transform:
-                      sort.col === item.colName
-                        ? sort.order === "ASC"
-                          ? "rotate(-90deg)"
-                          : "rotate(90deg)"
-                        : "",
-                    transition: "transform 150ms ease",
-                  }}
-                  onClick={() => handleSort(item.colName)}
-                />
+                {item.colName === "index" ? (
+                  <></>
+                ) : (
+                  <KeyboardArrowRightIcon
+                    sx={{
+                      fontSize: "23px",
+                      transform:
+                        sort.col === item.colName
+                          ? sort.order === "ASC"
+                            ? "rotate(-90deg)"
+                            : "rotate(90deg)"
+                          : "",
+                      transition: "transform 150ms ease",
+                    }}
+                    onClick={() => handleSort(item.colName)}
+                  />
+                )}
                 {item.headerName}
               </Grid>
             ))}
@@ -429,6 +282,12 @@ export default function StInfo() {
               >
                 Add
               </Button>
+              <AddStuDialog
+                open={open}
+                setOpen={setOpen}
+                fetchActInfoData={fetchActInfoData}
+                initData={initData}
+              ></AddStuDialog>
             </Grid>
           </Grid>
         </Box>
@@ -436,9 +295,7 @@ export default function StInfo() {
           return (
             <StInfoRow
               key={item.id}
-              {...item.room}
-              {...item.student}
-              studentId={item.student.id}
+              {...item}
               index={index}
               initData={initData}
               setInitData={setInitData}
