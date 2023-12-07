@@ -121,8 +121,18 @@ export default function MenuBar({ children }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Mini variant drawer
+          <Typography
+            variant="h5"
+            noWrap
+            component="div"
+            sx={{
+              textAlign: "center",
+              fontWeight: 700,
+              fontSize: 23,
+              color: "#e9f3f9",
+            }}
+          >
+            Hệ thống quản lý KTX
           </Typography>
         </Toolbar>
       </AppBar>

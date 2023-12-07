@@ -1,3 +1,4 @@
+import AddCircleIcon from "@mui/icons-material/AddCircleOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Accordion,
@@ -13,13 +14,10 @@ import {
   TextField,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
-
-import EditIcon from "@mui/icons-material/Edit";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import AddCircleIcon from "@mui/icons-material/AddCircleOutlined";
-import { blue, green, red } from "@mui/material/colors";
-import React, { useEffect, useState } from "react";
+import { green, red } from "@mui/material/colors";
 import axios from "axios";
+import dayjs from "dayjs";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 const styleItem = {
@@ -45,6 +43,7 @@ export const SocialActivityRow = ({
 }) => {
   const [expanded, setExpanded] = React.useState(false);
   const [ACT_INFO_DATA, setACT_INFO_DATA] = useState([]);
+  const [studentData, setStudentData] = useState([]);
 
   const fetchActInfoData = () => {
     axios
@@ -52,6 +51,16 @@ export const SocialActivityRow = ({
       .then((response) => {
         console.log(response.data);
         setACT_INFO_DATA(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+  const fetchStudentData = () => {
+    axios
+      .get("http://localhost:8080/list")
+      .then((response) => {
+        setStudentData(response.data);
       })
       .catch((error) => {
         console.error(error);
@@ -75,11 +84,16 @@ export const SocialActivityRow = ({
   });
 
   const onSubmitAdd = (data) => {
+    fetchStudentData();
+    const stdID = studentData
+      .filter((item) => item.student.mssv == data.mssv)
+      .map((item) => item.student.id);
+
+    console.log(stdID);
     axios
-      .patch(`http://localhost:8080/act?stdId=${data.stdId}&actId=${id}`)
+      .patch(`http://localhost:8080/act?stdId=${stdID}&actId=${id}`)
       .then((response) => {
         console.log(response.data);
-        // setACT_INFO_DATA(ACT_INFO_DATA.push({}));
         fetchActInfoData();
       })
       .catch((error) => {
@@ -90,8 +104,9 @@ export const SocialActivityRow = ({
   };
 
   const asyncValidate = async (value, name) => {
-    // You should replace the URL and the backend validation logic
-    const isDuplicate = ACT_INFO_DATA.some((item) => item.student.id == value);
+    const isDuplicate = ACT_INFO_DATA.some(
+      (item) => item.student.mssv == value
+    );
 
     if (isDuplicate) {
       return `Sinh vien already exists`;
@@ -142,7 +157,6 @@ export const SocialActivityRow = ({
   return (
     <Accordion expanded={expanded === id} onChange={handleChange(id)}>
       <AccordionSummary
-        // expandIcon={<ExpandMoreIcon />}
         aria-controls="cold-content"
         id="cold-header"
         sx={{ backgroundColor: "#E9F3F9" }}
@@ -171,7 +185,7 @@ export const SocialActivityRow = ({
             {numOfDay}
           </Grid>
           <Grid sx={styleItem} xs={2}>
-            {startDate}
+            {dayjs(startDate).format("DD/MM/YYYY")}
           </Grid>
           <Grid xs={1} display="flex" justifyContent="space-evenly">
             <IconButton aria-label="Add student to act">
@@ -198,9 +212,9 @@ export const SocialActivityRow = ({
                       name: "actName",
                     },
                     {
-                      label: "Id của sinh viên",
+                      label: "MSSV",
                       gridSize: 12,
-                      name: "stdId",
+                      name: "mssv",
                     },
                   ].map((item) => (
                     <Grid xs={item.gridSize} mt={0}>
@@ -212,7 +226,7 @@ export const SocialActivityRow = ({
                         {...register(`${item.name}`, {
                           required: `${item.label} is required`,
                           validate: async (value) =>
-                            await asyncValidate(value, "stdId"),
+                            await asyncValidate(value, "mssv"),
                         })}
                         error={!!errors[item.name]}
                         helperText={

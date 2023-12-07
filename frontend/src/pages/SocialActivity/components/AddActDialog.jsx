@@ -21,7 +21,7 @@ function AddActDialog({ open, setOpen, setInitData }) {
     handleClose();
   };
   const defaultFormValues = {
-    actName: "",
+    actName: "hehe",
     numOfDay: "",
     startDate: "",
   };
@@ -47,11 +47,14 @@ function AddActDialog({ open, setOpen, setInitData }) {
   const { register, handleSubmit, formState, reset } = form;
 
   const { errors } = formState;
+
+  console.log(errors);
   return (
     <Dialog
       open={open}
       onClose={handleClose}
       component="form"
+      noValidate
       onSubmit={handleSubmit(onSubmit)}
     >
       <DialogTitle>
@@ -79,7 +82,9 @@ function AddActDialog({ open, setOpen, setInitData }) {
             <Grid xs={item.gridSize} mt={2}>
               <TextField
                 required
-                autoFocus
+                // autoFocus
+                placeholder={item.name === "startDate" ? "YYYY-MM-DD" : ""}
+                multiline={!!(item.name === "startDate")}
                 {...register(`${item.name}`, {
                   required: `${item.label} is required`,
                 })}
@@ -87,6 +92,7 @@ function AddActDialog({ open, setOpen, setInitData }) {
                 helperText={
                   errors && errors[item.name] ? errors[item.name].message : ""
                 }
+                autoFocus
                 margin="dense"
                 id="name"
                 label={item.label}

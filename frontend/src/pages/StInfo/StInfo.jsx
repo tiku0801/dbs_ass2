@@ -1,3 +1,4 @@
+import AddIcon from "@mui/icons-material/Add";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import {
   Box,
@@ -6,7 +7,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   Pagination,
   TextField,
   ToggleButton,
@@ -14,17 +14,14 @@ import {
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import FilterSelect from "../../components/FilterSelect";
 import { SearchBar } from "../../components/SearchBar";
-import { StInfoRow } from "./components/StInfoRow";
 import usePagination from "../../hooks/usePagination";
-import axios from "axios";
-import AddIcon from "@mui/icons-material/Add";
+import { StInfoRow } from "./components/StInfoRow";
 
-import { red } from "@mui/material/colors";
 import { useForm } from "react-hook-form";
-// import { initData } from "./initData";
 
 const colHeader = () => ({
   textAlign: "center",
@@ -152,7 +149,7 @@ export default function StInfo() {
           return search.toLowerCase() === "" || search.toLowerCase() === "#"
             ? item
             : search.toLowerCase()[0] === "#"
-            ? item.room.roomName.includes(search.slice(1))
+            ? getRoomNumber(item.room.roomName).includes(search.slice(1))
             : item.student.firstName
                 .toLowerCase()
                 .includes(search.toLowerCase()) ||

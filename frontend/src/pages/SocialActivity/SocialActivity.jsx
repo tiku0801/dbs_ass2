@@ -125,7 +125,7 @@ export default function SocialActivity() {
               },
               {
                 gridSize: 1,
-                headerName: "Mã hoạt động",
+                headerName: "ID",
                 colName: "id",
               },
               {
