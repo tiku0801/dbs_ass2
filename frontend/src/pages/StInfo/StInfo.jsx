@@ -1,6 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import {
+  Alert,
   Box,
   Button,
   Pagination,
@@ -30,7 +31,8 @@ export default function StInfo() {
     setOpen(true);
   };
   const [initData, setInitData] = useState([]);
-
+  const [alert, setAlert] = useState(false);
+  const [alertContent, setAlertContent] = useState("");
   const fetchActInfoData = () => {
     axios
       .get("http://localhost:8080/list")
@@ -68,7 +70,7 @@ export default function StInfo() {
     sex: "",
     buildingName: "",
   });
-  const [rowNum, setRowNum] = React.useState(5);
+  const [rowNum, setRowNum] = React.useState(10);
 
   const [filteredData, setFilteredData] = useState(
     initData.sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
@@ -287,6 +289,8 @@ export default function StInfo() {
                 setOpen={setOpen}
                 fetchActInfoData={fetchActInfoData}
                 initData={initData}
+                setAlert={setAlert}
+                setAlertContent={setAlertContent}
               ></AddStuDialog>
             </Grid>
           </Grid>
@@ -351,6 +355,16 @@ export default function StInfo() {
           />
         </Box>
       </Box>
+      {alert ? (
+        <Alert
+          sx={{ position: "fixed", bottom: "3em", zIndex: "100000" }}
+          severity="error"
+        >
+          {alertContent}
+        </Alert>
+      ) : (
+        <></>
+      )}
     </Box>
   );
 }

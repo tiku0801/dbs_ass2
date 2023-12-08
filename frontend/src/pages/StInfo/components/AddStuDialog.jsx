@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Dialog,
   DialogActions,
@@ -9,10 +10,17 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import axios from "axios";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
-function AddStuDialog({ open, setOpen, fetchActInfoData, initData }) {
+function AddStuDialog({
+  open,
+  setOpen,
+  fetchActInfoData,
+  initData,
+  setAlert,
+  setAlertContent,
+}) {
   const defaultFormValues = {
     lastName: "",
     firstName: "",
@@ -44,7 +52,7 @@ function AddStuDialog({ open, setOpen, fetchActInfoData, initData }) {
       );
       fetchActInfoData();
       console.log(initData);
-      return { mssv: response.data.mssv, maxStudent: response.data.maxStudent };
+      return { mssv: response.data.msvv, maxStudent: response.data.maxStudent };
     } catch (error) {
       console.error(error);
     }
@@ -52,8 +60,18 @@ function AddStuDialog({ open, setOpen, fetchActInfoData, initData }) {
 
   const addDataOnServer = async (data) => {
     const response = await postData(data);
-    handleClose();
-    reset(defaultFormValues);
+    // const response = { mssv: true, maxStudent: true };
+    console.log(response);
+    if (!response.mssv) {
+      setAlertContent("MSSV đã tồn tại");
+      setAlert(true);
+    } else if (!response.maxStudent) {
+      setAlertContent("Phòng đã đầy");
+      setAlert(true);
+    } else {
+      handleClose();
+      reset(defaultFormValues);
+    }
   };
   const form = useForm({
     defaultValues: defaultFormValues,
@@ -68,6 +86,7 @@ function AddStuDialog({ open, setOpen, fetchActInfoData, initData }) {
   };
 
   const handleCancel = () => {
+    setAlert(false);
     reset(defaultFormValues);
     handleClose();
   };
@@ -134,8 +153,8 @@ function AddStuDialog({ open, setOpen, fetchActInfoData, initData }) {
                   autoFocus
                   {...register(`${item.name}`, {
                     required: `${item.label} is required`,
-                    validate: async (value) =>
-                      await asyncValidate(value, "mssv"),
+                    // validate: async (value) =>
+                    //   await asyncValidate(value, "mssv"),
                   })}
                   error={!!errors[item.name]}
                   helperText={

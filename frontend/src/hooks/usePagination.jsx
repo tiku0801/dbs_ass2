@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-const usePagination = (data, volume = 5) => {
+const usePagination = (data, volume = 10) => {
   const totalPages = useMemo(
     () => Math.ceil(data.length / volume),
     [volume, data.length]
