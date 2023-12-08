@@ -40,6 +40,8 @@ export const SocialActivityRow = ({
   startDate,
   initData,
   setInitData,
+  setAlert,
+  setAlertContent,
 }) => {
   const [expanded, setExpanded] = React.useState(false);
   const [ACT_INFO_DATA, setACT_INFO_DATA] = useState([]);
@@ -56,8 +58,8 @@ export const SocialActivityRow = ({
         console.error(error);
       });
   };
-  const fetchStudentData = () => {
-    axios
+  const fetchStudentData = async () => {
+    await axios
       .get("http://localhost:8080/list")
       .then((response) => {
         setStudentData(response.data);
@@ -70,6 +72,9 @@ export const SocialActivityRow = ({
   useEffect(() => {
     fetchActInfoData();
   }, [expanded]);
+  useEffect(() => {
+    fetchStudentData();
+  }, []);
 
   const [openAdd, setOpenAdd] = useState(false);
   const handleChange = (panel) => (e, isExpanded) => {
@@ -83,24 +88,43 @@ export const SocialActivityRow = ({
     },
   });
 
-  const onSubmitAdd = (data) => {
+  const patchData = async (data) => {
     fetchStudentData();
+    console.log("hehe", studentData);
     const stdID = studentData
       .filter((item) => item.student.mssv == data.mssv)
       .map((item) => item.student.id);
-
-    console.log(stdID);
-    axios
-      .patch(`http://localhost:8080/act?stdId=${stdID}&actId=${id}`)
-      .then((response) => {
-        console.log(response.data);
-        fetchActInfoData();
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-    handleCloseAdd();
-    console.log(data);
+    if (stdID) {
+      await axios
+        .patch(`http://localhost:8080/act?stdId=${stdID}&actId=${id}`)
+        .then((response) => {
+          fetchActInfoData();
+          console.log(response.data);
+          if (response.data && !response.data.duplicated) {
+            setAlertContent("MSSV đã tồn tại");
+            setAlert(true);
+          } else if (response.data && !response.data.socialDay) {
+            setAlertContent("Sinh viên đã có đủ 15 ngày CTXH");
+            setAlert(true);
+          } else {
+            handleCloseAdd();
+            reset({
+              stdId: "",
+              actName: actName,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else {
+      setAlertContent("Sinh viên không ở KTX");
+      setAlert(true);
+    }
+  };
+  const onSubmitAdd = async (data) => {
+    const response = await patchData(data);
+    // console.log("res", response);
   };
 
   const asyncValidate = async (value, name) => {
@@ -132,6 +156,7 @@ export const SocialActivityRow = ({
   };
 
   const handleCancelAdd = (e) => {
+    setAlert(false);
     e.stopPropagation();
     reset({
       stdId: "",

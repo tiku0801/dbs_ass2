@@ -1,6 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import {
+  Alert,
   Box,
   Button,
   Pagination,
@@ -30,6 +31,8 @@ export default function SocialActivity() {
     setOpen(true);
   };
 
+  const [alert, setAlert] = useState(false);
+  const [alertContent, setAlertContent] = useState("");
   const [search, setSearch] = useState("");
   const [content, setContent] = React.useState({
     startDate: "",
@@ -209,6 +212,8 @@ export default function SocialActivity() {
               index={index}
               initData={initData}
               setInitData={setInitData}
+              setAlert={setAlert}
+              setAlertContent={setAlertContent}
             ></SocialActivityRow>
           );
         })}
@@ -261,6 +266,16 @@ export default function SocialActivity() {
           />
         </Box>
       </Box>
+      {alert ? (
+        <Alert
+          sx={{ position: "fixed", bottom: "3em", zIndex: "100000" }}
+          severity="error"
+        >
+          {alertContent}
+        </Alert>
+      ) : (
+        <></>
+      )}
     </Box>
   );
 }

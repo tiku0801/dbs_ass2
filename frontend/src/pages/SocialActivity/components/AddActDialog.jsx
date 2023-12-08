@@ -21,7 +21,7 @@ function AddActDialog({ open, setOpen, setInitData }) {
     handleClose();
   };
   const defaultFormValues = {
-    actName: "hehe",
+    actName: "",
     numOfDay: "",
     startDate: "",
   };
